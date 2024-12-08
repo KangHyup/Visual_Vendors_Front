@@ -5,12 +5,12 @@ export const uploadVideo = async (file, parts, rate) => {
     // 1. 파일 확장자 검증
     const fileExtension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
     if (!allowedExtensions.includes(fileExtension)) {
-        throw new Error('Invalid file format. Please upload a video file (.mp4, .avi, .mov, .mkv).');
+        throw new Error('다음과 같은 형식의 파일만 넣어주쇼 (.mp4, .avi, .mov, .mkv).');
     }
 
     // 2. 파일 크기 검증
     if (file.size > maxSizeInBytes) {
-        throw new Error('File size exceeds the 500MB limit. Please upload a smaller file.');
+        throw new Error('파일이 너무 커요 500MB이하만 넣어 주세요');
     }
 
     // 3. 서버에 파일 전송
@@ -26,8 +26,14 @@ export const uploadVideo = async (file, parts, rate) => {
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to process video');
+            const contentType = response.headers.get('content-type');
+            
+            if (contentType && contentType.includes('application/json')) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to process video');
+        }   else {
+                throw new Error('Server returned an unexpected response');
+        }
         }
 
         return await response.json();
