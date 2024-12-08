@@ -20,7 +20,7 @@ export const uploadVideo = async (file, parts, rate) => {
     formData.append('rate', rate);
 
     try {
-        const response = await fetch('http://localhost:8080/process-video', {
+        const response = await fetch('/api/process-video', {
             method: 'POST',
             body: formData,
         });
