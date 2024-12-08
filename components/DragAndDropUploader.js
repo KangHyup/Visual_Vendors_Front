@@ -1,64 +1,79 @@
-import multer from 'multer';
-import nextConnect from 'next-connect';
-import path from 'path';
-import fs from 'fs';
+'use client';
 
-// Multer 설정
-const upload = multer({ dest: 'uploads/' });
+import React, { useState } from 'react';
+import { Container, Box, Typography, Button } from '@mui/material';
+import { CloudUpload } from '@mui/icons-material';
 
-// 비디오 처리 함수
-const processVideo = (file, parts, rate) => {
-// 비디오 처리 로직 구현
-// 예: ffmpeg를 사용하여 비디오 변환 등
-// 처리 진행률 업데이트 로직 포함
+const DragAndDropUploader = ({ onFileUpload }) => {
+    const [isDragging, setIsDragging] = useState(false);
+    const [uploadedFile, setUploadedFile] = useState(null);
+
+    const handleDragOver = (event) => {
+        event.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = () => {
+        setIsDragging(false);
+    };
+
+    const handleDrop = (event) => {
+        event.preventDefault();
+        setIsDragging(false);
+
+        const file = event.dataTransfer.files[0];
+        if (file) {
+            setUploadedFile(file);
+            onFileUpload(file); // 부모 컴포넌트에 파일 전달
+        }
+    };
+
+    const handleFileUpload = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            setUploadedFile(file);
+            onFileUpload(file); // 부모 컴포넌트에 파일 전달
+        }
+    };
+
+    return (
+        <Container maxWidth="md">
+            <Box
+                sx={{
+                    mt: 8,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    backgroundColor: isDragging ? '#bbdefb' : '#e3f2fd',
+                    p: 4,
+                    borderRadius: 1,
+                    border: '2px dashed #90caf9',
+                    transition: 'background-color 0.3s',
+                }}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+            >
+                <CloudUpload sx={{ fontSize: 80, color: '#90caf9' }} />
+                <Typography variant="h6" sx={{ mt: 2, mb: 2, color: '#90caf9' }}>
+                    비디오 파일을 드래그 앤 드롭 하세요
+                </Typography>
+                <Button
+                    variant="contained"
+                    component="label"
+                    sx={{ backgroundColor: '#1e88e5', color: '#ffffff' }}
+                >
+                    파일 업로드
+                    <input type="file" hidden onChange={handleFileUpload} />
+                </Button>
+                {uploadedFile && (
+                    <Typography variant="body2" sx={{ mt: 2, color: '#1e88e5' }}>
+                        업로드된 파일: {uploadedFile.name}
+                    </Typography>
+                )}
+            </Box>
+        </Container>
+    );
 };
 
-// API 핸들러 설정
-const apiRoute = nextConnect({
-onError: (err, req, res) => {
-    console.error(err);
-    res.status(500).json({ error: '서버 오류가 발생했습니다.' });
-},
-onNoMatch: (req, res) => {
-    res.status(404).json({ error: 'API 라우트를 찾을 수 없습니다.' });
-},
-});
-
-// Multer 미들웨어 추가
-apiRoute.use(upload.single('file'));
-
-// POST 요청 처리
-apiRoute.post((req, res) => {
-const file = req.file;
-const { parts, rate } = req.body;
-
-// 파일 유효성 검사
-const allowedExtensions = ['.mp4', '.avi', '.mov', '.mkv'];
-const fileExtension = path.extname(file.originalname).toLowerCase();
-const maxSizeInBytes = 500 * 1024 * 1024; // 500MB
-
-if (!allowedExtensions.includes(fileExtension)) {
-    return res.status(400).json({ error: '잘못된 파일 형식입니다.' });
-}
-
-if (file.size > maxSizeInBytes) {
-    return res.status(400).json({ error: '파일 크기가 500MB를 초과합니다.' });
-}
-
-// 비디오 처리
-try {
-    processVideo(file, parts, rate);
-    res.status(200).json({ message: '비디오 처리가 완료되었습니다.' });
-} catch (err) {
-    console.error(err);
-    res.status(500).json({ error: '비디오 처리 중 오류가 발생했습니다.' });
-}
-});
-
-export default apiRoute;
-
-export const config = {
-api: {
-    bodyParser: false, // Multer 사용 시 bodyParser 비활성화
-},
-};
+export default DragAndDropUploader;
