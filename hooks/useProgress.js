@@ -9,11 +9,13 @@ export const useProgress = () => {
     });
 
     useEffect(() => {
-        const eventSource = new EventSource("/api/progress");
+        // Flask 서버의 /progress 엔드포인트로 직접 연결
+        const eventSource = new EventSource("http://localhost:8080/progress");
 
         eventSource.onmessage = (event) => {
             const data = JSON.parse(event.data);
             setProgress(data);
+            console.log("서버로부터 받은 데이터:", data);
         };
 
         eventSource.onerror = () => {
