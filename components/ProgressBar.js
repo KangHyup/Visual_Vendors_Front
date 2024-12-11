@@ -1,60 +1,42 @@
-import React from "react";
-import { LinearProgress, Typography, Box, Stack } from "@mui/material";
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { styled } from '@mui/material/styles';
-
-const StyledLinearProgress = styled(LinearProgress)(({ theme }) => ({
-height: 10,
-borderRadius: 5,
-backgroundColor: theme.palette.grey[300],
-'& .MuiLinearProgress-bar': {
-    borderRadius: 5,
-    backgroundColor: theme.palette.primary.main,
-},
-}));
+import React, { useEffect } from 'react';
+import { LinearProgress, Typography, Box, Stack } from '@mui/material';
 
 const ProgressBar = ({ progress }) => {
-    const { status, current_frame, total_frames } = progress;
+    const { status, current_frame, total_frames, output_file } = progress;
     const percentage = total_frames > 0 ? (current_frame / total_frames) * 100 : 0;
 
-    let content;
-    if (status === "processing") {
-        content = (
-            <Stack spacing={2} sx={{ width: '100%', alignItems: 'center' }}>
-                <Typography variant="h6" sx={{ color: "text.secondary" }}>
-                    Processing... {current_frame} of {total_frames} frames
-                </Typography>
-                <Box sx={{ width: '60%' }}>
-                    <StyledLinearProgress variant="determinate" value={percentage} />
-                </Box>
-            </Stack>
-        );
-    } else if (status === "completed") {
-        content = (
-            <Stack spacing={2} sx={{ width: '100%', alignItems: 'center' }}>
-                <CheckCircleIcon color="success" style={{ fontSize: 48 }} />
-                <Typography variant="h6" sx={{ color: "text.primary" }}>
-                    Processing Complete!
-                </Typography>
-            </Stack>
-        );
-    } else {
-        content = (
-            <Stack spacing={2} sx={{ width: '100%', alignItems: 'center' }}>
-                <Typography variant="h6" sx={{ color: "text.disabled" }}>
-                    Idle (No video processing)
-                </Typography>
-                <Box sx={{ width: '60%' }}>
-                    {/* Idle 상태에서는 바를 표시하지 않고 회색 바탕만 깔아둘 수도 있음 */}
-                    <StyledLinearProgress variant="determinate" value={0} />
-                </Box>
-            </Stack>
-        );
-    }
+    // 처리 완료 시 자동 다운로드 시작
+    useEffect(() => {
+        if (status === 'completed' && output_file) {
+            // 자동으로 다운로드 링크로 이동하여 다운로드 시작
+            window.location.href = `http://localhost:8080/download/${output_file}`;
+        }
+    }, [status, output_file]);
 
     return (
-        <Box sx={{ width: "100%", mt: 4, display: "flex", justifyContent: "center" }}>
-            {content}
+        <Box sx={{ width: '100%', mt: 4, display: 'flex', justifyContent: 'center' }}>
+            <Stack spacing={2} alignItems="center">
+                {status === 'processing' && (
+                    <>
+                        <Typography variant="h6" sx={{ color: 'text.secondary' }}>
+                            Processing... {current_frame} of {total_frames} frames
+                        </Typography>
+                        <Box sx={{ width: '60%' }}>
+                            <LinearProgress variant="determinate" value={percentage} />
+                        </Box>
+                    </>
+                )}
+                {status === 'completed' && (
+                    <Typography variant="h6" sx={{ color: 'text.primary' }}>
+                        Processing Complete! Starting download...
+                    </Typography>
+                )}
+                {status === 'idle' && (
+                    <Typography variant="h6" sx={{ color: 'text.disabled' }}>
+                        Idle (No video processing)
+                    </Typography>
+                )}
+            </Stack>
         </Box>
     );
 };
