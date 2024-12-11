@@ -8,10 +8,10 @@ export const validateFile = (file) => {
     const fileExtension = file.originalname.slice(file.originalname.lastIndexOf(".")).toLowerCase();
 
     if (!allowedExtensions.includes(fileExtension)) {
-    throw new Error("Invalid file format");
+    throw new Error("파일 확장자가 이상하오");
     }
 
     if (file.size > maxSizeInBytes) {
-    throw new Error("File size exceeds 500MB limit");
+    throw new Error("파일 크기가 너무 크오");
     }
 };

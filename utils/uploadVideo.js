@@ -20,14 +20,14 @@ export const uploadVideo = async (file, parts, rate) => {
     formData.append('rate', rate);
 
     try {
-        const response = await fetch('/api/process-video', {
+        const response = await fetch('http://localhost:8080/process-video', {
             method: 'POST',
             body: formData,
         });
 
         if (!response.ok) {
             const contentType = response.headers.get('content-type');
-            
+
             if (contentType && contentType.includes('application/json')) {
                 const error = await response.json();
                 throw new Error(error.error || 'Failed to process video');

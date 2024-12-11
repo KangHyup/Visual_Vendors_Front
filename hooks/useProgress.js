@@ -9,7 +9,7 @@ export const useProgress = () => {
     });
 
     useEffect(() => {
-        const eventSource = new EventSource("/api/progress-video");
+        const eventSource = new EventSource("/api/progress");
 
         eventSource.onmessage = (event) => {
             const data = JSON.parse(event.data);
