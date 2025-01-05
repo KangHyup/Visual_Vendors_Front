@@ -1,17 +1,18 @@
+// components/ProgressBar.js
+
 import React, { useEffect } from 'react';
 import { LinearProgress, Typography, Box, Stack } from '@mui/material';
 
 const ProgressBar = ({ progress }) => {
-    const { status, current_frame, total_frames, output_file } = progress;
+    const { status, current_frame, total_frames, output } = progress;
     const percentage = total_frames > 0 ? (current_frame / total_frames) * 100 : 0;
 
     // 처리 완료 시 자동 다운로드 시작
     useEffect(() => {
-        if (status === 'completed' && output_file) {
-            // 자동으로 다운로드 링크로 이동하여 다운로드 시작
-            window.location.href = `http://localhost:8080/download/${output_file}`;
+        if (status === 'completed' && output) {
+            window.location.href = `http://localhost:8080/download/${output}`;
         }
-    }, [status, output_file]);
+    }, [status, output]);
 
     return (
         <Box sx={{ width: '100%', mt: 4, display: 'flex', justifyContent: 'center' }}>
@@ -34,6 +35,11 @@ const ProgressBar = ({ progress }) => {
                 {status === 'idle' && (
                     <Typography variant="h6" sx={{ color: 'text.disabled' }}>
                         Idle (No video processing)
+                    </Typography>
+                )}
+                {status === 'error' && (
+                    <Typography variant="h6" sx={{ color: 'error.main' }}>
+                        Error: {progress.error}
                     </Typography>
                 )}
             </Stack>
